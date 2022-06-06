@@ -94,15 +94,7 @@ resource "aws_eip" "learn_vm" {
     }
 }
 
-#resource "aws_subnet" "main" {
-#  vpc_id     = lookup(var.awsvars, "vpc")
-#  cidr_block = "172.31.0.0/16"
-
-#  tags = {
-#    Name = "Main"
-#  }
-#}
-
+# Create load balancer in AWS.
 resource "aws_alb" "terraformlb" {  
   name            = "terraformlb"
   subnets         = [ "subnet-04abb2661f17e3e89", "subnet-083018511d96dd640", "subnet-0acb95410f16e0efd", "subnet-0f09bc07081a24426"]
@@ -112,6 +104,7 @@ resource "aws_alb" "terraformlb" {
   }
 }
 
+# Create and configure load balancer target group.
 resource "aws_alb_target_group" "group" {
   name     = "terraform-aws"
   port     = 80
@@ -127,6 +120,7 @@ resource "aws_alb_target_group" "group" {
   }
 }
 
+# Add listener for load balancer.
 resource "aws_alb_listener" "listener_http" {
   load_balancer_arn = "${aws_alb.terraformlb.arn}"
   port              = "80"
@@ -138,6 +132,7 @@ resource "aws_alb_listener" "listener_http" {
   }
 }
 
+# Attach load balancer to the EC2 instance.
 resource "aws_alb_target_group_attachment" "terratest" {
   target_group_arn = "${aws_alb_target_group.group.arn}"
   target_id        = "${aws_instance.learn_vm.id}"  
